@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PTCG Watchlist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0e0e10;
+      --bg2:      #16161a;
+      --bg3:      #1e1e24;
+      --border:   rgba(255,255,255,0.08);
+      --border2:  rgba(255,255,255,0.14);
+      --text:     #f0f0f2;
+      --muted:    #8a8a99;
+      --accent:   #E3350D;
+      --accent2:  #ff5a35;
+      --gold:     #f5a623;
+      --green:    #34c77b;
+      --blue:     #4d9fff;
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body:    'Inter', sans-serif;
+      --radius:   10px;
+      --radius-lg: 14px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(14,14,16,0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-ball {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .logo-ball::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 50%;
+      background: var(--bg);
+    }
+    .logo-ball::before {
+      content: '';
+      position: absolute;
+      width: 8px; height: 8px;
+      background: var(--bg);
+      border-radius: 50%;
+      z-index: 2;
+      border: 2px solid var(--accent);
+    }
+
+    .logo-name {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+    .logo-name span { color: var(--accent); }
+
+    .topbar-right { display: flex; align-items: center; gap: 8px; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font-body); font-size: 13px; font-weight: 500;
+      padding: 7px 14px; border-radius: var(--radius);
+      border: 1px solid var(--border2); background: var(--bg3);
+      color: var(--text); cursor: pointer; text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .btn:hover { background: var(--bg2); border-color: rgba(255,255,255,0.22); }
+    .btn-accent {
+      background: var(--accent); border-color: var(--accent); color: #fff;
+    }
+    .btn-accent:hover { background: var(--accent2); border-color: var(--accent2); }
+    .btn-ghost { border-color: transparent; background: transparent; }
+    .btn-ghost:hover { background: var(--bg3); border-color: var(--border); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-icon { padding: 7px; }
+
+    /* ── Layout ── */
+    .page { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+    /* ── Stats ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      margin-bottom: 1.75rem;
+    }
+
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.125rem;
+    }
+    .stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+    .stat-value.red   { color: var(--accent2); }
+    .stat-value.green { color: var(--green); }
+    .stat-value.gold  { color: var(--gold); }
+    .stat-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 1.25rem; align-items: center;
+    }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap .ti {
+      position: absolute; left: 10px; top: 50%;
+      transform: translateY(-50%); color: var(--muted);
+      font-size: 16px; pointer-events: none;
+    }
+    .search-wrap input { padding-left: 34px; width: 100%; }
+
+    input[type="text"], input[type="number"], input[type="date"],
+    input[type="url"], select, textarea {
+      font-family: var(--font-body); font-size: 13px;
+      background: var(--bg3); border: 1px solid var(--border2);
+      color: var(--text); border-radius: var(--radius);
+      padding: 8px 10px; height: 36px;
+      transition: border-color 0.15s;
+      outline: none; width: 100%;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+    }
+    select { cursor: pointer; }
+    select option { background: var(--bg3); }
+    textarea { height: auto; resize: vertical; min-height: 60px; }
+
+    /* ── Card Grid ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.125rem;
+      display: flex; flex-direction: column; gap: 0;
+      transition: border-color 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .card:hover { border-color: var(--border2); }
+
+    .card-accent-bar {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .card-name { font-family: var(--font-display); font-size: 15px; font-weight: 600; line-height: 1.3; flex: 1; padding-right: 8px; }
+    .card-set { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .card-num { font-size: 10px; color: var(--muted); font-family: monospace; }
+
+    .rarity-badge {
+      font-size: 10px; font-weight: 600;
+      padding: 3px 8px; border-radius: 20px;
+      white-space: nowrap; flex-shrink: 0;
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .r-C  { background: rgba(255,255,255,0.07); color: var(--muted); }
+    .r-U  { background: rgba(77,159,255,0.15); color: #7ab8ff; }
+    .r-R  { background: rgba(245,166,35,0.15); color: var(--gold); }
+    .r-DR { background: rgba(245,166,35,0.22); color: #ffc155; }
+    .r-IR { background: rgba(180,100,255,0.15); color: #c07fff; }
+    .r-SIR{ background: rgba(52,199,123,0.15); color: #5ddea0; }
+    .r-HR { background: rgba(227,53,13,0.18); color: var(--accent2); }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+    .card-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 8px; }
+    .field-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 2px; }
+    .field-val { font-size: 14px; font-weight: 500; color: var(--text); }
+    .field-val.price-main { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--accent2); }
+    .field-val.muted   { color: var(--muted); font-weight: 400; font-size: 12px; }
+    .field-val.green   { color: var(--green); }
+    .field-val.gold    { color: var(--gold); }
+    .field-val.red     { color: var(--accent2); }
+    .field-val.blue    { color: var(--blue); }
+
+    .target-diff {
+      font-size: 10px; margin-top: 2px;
+    }
+    .target-diff.below { color: var(--green); }
+    .target-diff.above { color: var(--muted); }
+
+    .card-actions {
+      display: flex; gap: 6px;
+      margin-top: 12px;
+    }
+    .card-actions .btn { flex: 1; justify-content: center; font-size: 12px; padding: 6px 8px; }
+    .btn-danger:hover { border-color: var(--accent); color: var(--accent2); background: rgba(227,53,13,0.08); }
+
+    .snkrdunk-btn {
+      background: rgba(52,199,123,0.1);
+      border-color: rgba(52,199,123,0.3);
+      color: var(--green);
+    }
+    .snkrdunk-btn:hover {
+      background: rgba(52,199,123,0.18);
+      border-color: rgba(52,199,123,0.5);
+    }
+
+    /* ── Empty state ── */
+    .empty {
+      grid-column: 1 / -1;
+      text-align: center; padding: 5rem 2rem;
+      color: var(--muted);
+    }
+    .empty .ti { font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.3; }
+    .empty-title { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .empty-sub { font-size: 13px; }
+
+    /* ── Modal ── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(4px);
+      z-index: 200; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .overlay.open { display: flex; }
+
+    .modal {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      width: 100%; max-width: 520px;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-header {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 1.25rem;
+    }
+    .modal-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 5px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    .modal-footer { margin-top: 1.25rem; display: flex; gap: 8px; }
+    .modal-footer .btn { flex: 1; justify-content: center; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+      background: var(--bg3); border: 1px solid var(--border2);
+      color: var(--text); padding: 10px 18px; border-radius: var(--radius);
+      font-size: 13px; font-weight: 500;
+      z-index: 999; opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+
+    /* ── Print end warning ── */
+    .print-alert {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: var(--gold); margin-top: 3px;
+    }
+
+    /* ── GitHub banner ── */
+    .gh-banner {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 10px 14px;
+      margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12px; color: var(--muted);
+    }
+    .gh-banner a { color: var(--blue); text-decoration: none; }
+    .gh-banner a:hover { text-decoration: underline; }
+    .gh-banner .ti { color: var(--text); font-size: 18px; flex-shrink: 0; }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px;
+      color: var(--muted); margin-bottom: 0.75rem;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 540px) {
+      .topbar { padding: 0 1rem; }
+      .logo-name { display: none; }
+      .form-row { grid-template-columns: 1fr; }
+      .stat-value { font-size: 22px; }
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- Topbar -->
+<nav class="topbar">
+  <a class="logo" href="#">
+    <div class="logo-ball" aria-hidden="true"></div>
+    <span class="logo-name">PTCG <span>Watch</span></span>
+  </a>
+  <div class="topbar-right">
+    <a class="btn btn-ghost btn-sm" href="https://github.com" target="_blank" id="ghLink" title="View on GitHub">
+      <i class="ti ti-brand-github"></i>
+      <span class="hide-sm">GitHub</span>
+    </a>
+    <a class="btn btn-ghost btn-sm" href="https://snkrdunk.com" target="_blank" title="Open SNKRDUNK">
+      <i class="ti ti-external-link"></i>
+      <span class="hide-sm">SNKRDUNK</span>
+    </a>
+    <button class="btn btn-accent" onclick="openModal()">
+      <i class="ti ti-plus" aria-hidden="true"></i> Add card
+    </button>
+  </div>
+</nav>
+
+<!-- Page -->
+<main class="page">
+
+  <div class="gh-banner" id="ghBanner">
+    <i class="ti ti-brand-github"></i>
+    <span>Set your GitHub Pages URL to personalise this app. <a href="#" onclick="setGithubUrl(); return false;">Configure now</a> — or update it any time in settings.</span>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" id="statsGrid"></div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <i class="ti ti-search"></i>
+      <input type="text" id="searchInput" placeholder="Search card or set…" oninput="render()">
+    </div>
+    <select id="rarityFilter" style="width:auto" onchange="render()">
+      <option value="">All rarities</option>
+      <option value="Common">Common</option>
+      <option value="Uncommon">Uncommon</option>
+      <option value="Rare">Rare</option>
+      <option value="Double Rare">Double Rare</option>
+      <option value="Illustration Rare">Illustration Rare</option>
+      <option value="Special Illustration Rare">Special Illustration Rare</option>
+      <option value="Hyper Rare">Hyper Rare</option>
+    </select>
+    <select id="condFilter" style="width:auto" onchange="render()">
+      <option value="">All conditions</option>
+      <option value="Raw">Raw</option>
+      <option value="PSA">PSA graded</option>
+    </select>
+    <select id="sortSelect" style="width:auto" onchange="render()">
+      <option value="added">Newest first</option>
+      <option value="price-desc">Price: high → low</option>
+      <option value="price-asc">Price: low → high</option>
+      <option value="name">Name A–Z</option>
+      <option value="print">Print ending soon</option>
+    </select>
+  </div>
+
+  <div class="section-label" id="resultsLabel">Watchlist</div>
+
+  <!-- Cards -->
+  <div class="cards-grid" id="cardsGrid"></div>
+
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Modal: Add / Edit -->
+<div class="overlay" id="overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add card</div>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal()" aria-label="Close"><i class="ti ti-x"></i></button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Card name *</label>
+      <input type="text" id="f-name" placeholder="e.g. Charizard ex">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Set name *</label>
+        <input type="text" id="f-set" placeholder="e.g. Obsidian Flames">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Card number</label>
+        <input type="text" id="f-num" placeholder="e.g. 234/197">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Rarity</label>
+        <select id="f-rarity">
+          <option value="Common">Common</option>
+          <option value="Uncommon">Uncommon</option>
+          <option value="Rare">Rare</option>
+          <option value="Double Rare">Double Rare</option>
+          <option value="Illustration Rare" selected>Illustration Rare</option>
+          <option value="Special Illustration Rare">Special Illustration Rare</option>
+          <option value="Hyper Rare">Hyper Rare</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Condition</label>
+        <select id="f-condtype" onchange="togglePSA()">
+          <option value="Raw">Raw</option>
+          <option value="PSA">PSA graded</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row" id="psaRow" style="display:none">
+      <div class="form-group">
+        <label class="form-label">PSA grade</label>
+        <select id="f-psa">
+          <option>PSA 10</option><option>PSA 9</option><option>PSA 8</option>
+          <option>PSA 7</option><option>PSA 6</option><option>PSA 5</option>
+        </select>
+      </div>
+      <div></div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Current price (HKD)</label>
+        <input type="number" id="f-price" placeholder="0" step="1" min="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Target buy price (HKD)</label>
+        <input type="number" id="f-target" placeholder="0" step="1" min="0">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Last sold price (HKD)</label>
+        <input type="number" id="f-lastsold" placeholder="0" step="1" min="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Last sold date</label>
+        <input type="date" id="f-solddate">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Print end date</label>
+      <input type="date" id="f-printend">
+      <div class="form-hint">When this set stops printing / rotates out</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">SNKRDUNK listing URL</label>
+      <input type="url" id="f-snkr" placeholder="https://snkrdunk.com/en/cards/...">
+      <div class="form-hint">Paste the SNKRDUNK product page URL to link directly to price history</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <textarea id="f-notes" placeholder="e.g. want NM only, check after payday"></textarea>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="saveCard()"><i class="ti ti-device-floppy"></i> Save card</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Storage ──────────────────────────────────────────────
+const STORE     = 'ptcg_watchlist_v2';
+const GH_STORE  = 'ptcg_gh_url';
+
+let cards  = [];
+let editId = null;
+
+function loadData() {
+  try { cards = JSON.parse(localStorage.getItem(STORE)) || defaultCards(); }
+  catch { cards = defaultCards(); }
+}
+function saveData() { localStorage.setItem(STORE, JSON.stringify(cards)); }
+
+function defaultCards() {
+  return [
+    { id: uid(), name: 'Charizard ex', set: 'Obsidian Flames', num: '234/197', rarity: 'Special Illustration Rare', condtype: 'Raw', psa: '', price: 1100, target: 900, lastsold: 1050, solddate: '2025-06-15', printend: '2026-09-01', snkr: 'https://snkrdunk.com/en/trading-cards/', notes: 'Want NM condition only', added: Date.now() - 86400000*3 },
+    { id: uid(), name: 'Umbreon VMAX', set: 'Evolving Skies', num: '215/203', rarity: 'Hyper Rare', condtype: 'PSA', psa: 'PSA 10', price: 3900, target: 3200, lastsold: 3750, solddate: '2025-06-20', printend: '', snkr: 'https://snkrdunk.com/en/trading-cards/', notes: 'Alt art, high priority', added: Date.now() - 86400000*7 },
+    { id: uid(), name: 'Pikachu VMAX', set: 'Vivid Voltage', num: '188/185', rarity: 'Hyper Rare', condtype: 'Raw', psa: '', price: 560, target: 500, lastsold: 540, solddate: '2025-06-18', printend: '2025-12-31', snkr: '', notes: '', added: Date.now() - 86400000 }
+  ];
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// ── GitHub URL ────────────────────────────────────────────
+function loadGhUrl() {
+  const url = localStorage.getItem(GH_STORE);
+  if (url) {
+    document.getElementById('ghLink').href = url;
+    document.getElementById('ghBanner').style.display = 'none';
+  }
+}
+
+function setGithubUrl() {
+  const url = prompt('Paste your GitHub Pages URL (e.g. https://yourusername.github.io/ptcg-watchlist):');
+  if (url && url.startsWith('http')) {
+    localStorage.setItem(GH_STORE, url);
+    document.getElementById('ghLink').href = url;
+    document.getElementById('ghBanner').style.display = 'none';
+    toast('GitHub URL saved ✓');
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function hkd(val) {
+  if (!val && val !== 0) return '—';
+  return 'HK$' + Math.round(val).toLocaleString();
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function daysUntil(d) {
+  if (!d) return null;
+  return Math.ceil((new Date(d + 'T00:00:00') - new Date()) / 86400000);
+}
+
+function rarityKey(r) {
+  const map = { 'Common':'C','Uncommon':'U','Rare':'R','Double Rare':'DR','Illustration Rare':'IR','Special Illustration Rare':'SIR','Hyper Rare':'HR' };
+  return map[r] || 'C';
+}
+
+function rarityShort(r) {
+  const map = { 'Common':'C','Uncommon':'UC','Rare':'R','Double Rare':'2R','Illustration Rare':'IR','Special Illustration Rare':'SIR','Hyper Rare':'HR' };
+  return map[r] || r;
+}
+
+function accentColor(r) {
+  const map = { 'Common':'#555','Uncommon':'#4d9fff','Rare':'#f5a623','Double Rare':'#ffc155','Illustration Rare':'#c07fff','Special Illustration Rare':'#34c77b','Hyper Rare':'#E3350D' };
+  return map[r] || '#555';
+}
+
+function printStatus(d) {
+  const days = daysUntil(d);
+  if (days === null) return null;
+  if (days < 0)   return { label: 'Print ended', cls: 'red', urgent: true };
+  if (days <= 30) return { label: `${days}d left`, cls: 'red', urgent: true };
+  if (days <= 90) return { label: `~${days}d left`, cls: 'gold', urgent: true };
+  return { label: fmtDate(d), cls: '', urgent: false };
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ── Stats ─────────────────────────────────────────────────
+function renderStats() {
+  const total      = cards.length;
+  const totalVal   = cards.reduce((s,c) => s + (c.price||0), 0);
+  const atTarget   = cards.filter(c => c.target && c.price <= c.target).length;
+  const printSoon  = cards.filter(c => { const d = daysUntil(c.printend); return d !== null && d >= 0 && d <= 90; }).length;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Watching</div>
+      <div class="stat-value">${total}</div>
+      <div class="stat-sub">cards on list</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total list value</div>
+      <div class="stat-value">HK$${Math.round(totalVal).toLocaleString()}</div>
+      <div class="stat-sub">at current prices</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">At / below target</div>
+      <div class="stat-value green">${atTarget}</div>
+      <div class="stat-sub">ready to buy</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Print ending soon</div>
+      <div class="stat-value ${printSoon ? 'gold' : ''}">${printSoon}</div>
+      <div class="stat-sub">within 90 days</div>
+    </div>
+  `;
+}
+
+// ── Render ────────────────────────────────────────────────
+function render() {
+  renderStats();
+
+  const q    = (document.getElementById('searchInput').value || '').toLowerCase();
+  const rf   = document.getElementById('rarityFilter').value;
+  const cf   = document.getElementById('condFilter').value;
+  const sort = document.getElementById('sortSelect').value;
+
+  let list = cards.filter(c => {
+    const mq = !q || c.name.toLowerCase().includes(q) || (c.set||'').toLowerCase().includes(q) || (c.notes||'').toLowerCase().includes(q);
+    const mr = !rf || c.rarity === rf;
+    const mc = !cf || c.condtype === cf;
+    return mq && mr && mc;
+  });
+
+  if (sort === 'price-desc') list.sort((a,b) => (b.price||0)-(a.price||0));
+  else if (sort === 'price-asc') list.sort((a,b) => (a.price||0)-(b.price||0));
+  else if (sort === 'name') list.sort((a,b) => a.name.localeCompare(b.name));
+  else if (sort === 'print') list.sort((a,b) => {
+    const da = a.printend ? daysUntil(a.printend) : 9999;
+    const db = b.printend ? daysUntil(b.printend) : 9999;
+    return da - db;
+  });
+  else list.sort((a,b) => (b.added||0)-(a.added||0));
+
+  document.getElementById('resultsLabel').textContent =
+    list.length === cards.length ? `Watchlist · ${cards.length} card${cards.length !== 1 ? 's' : ''}` : `${list.length} of ${cards.length} cards`;
+
+  const grid = document.getElementById('cardsGrid');
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty">
+      <i class="ti ti-cards"></i>
+      <div class="empty-title">${cards.length ? 'No cards match your filters' : 'Your watchlist is empty'}</div>
+      <div class="empty-sub">${cards.length ? 'Try adjusting the search or filters.' : 'Hit "Add card" to start monitoring prices.'}</div>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(c => {
+    const rk   = rarityKey(c.rarity);
+    const rs   = rarityShort(c.rarity);
+    const ac   = accentColor(c.rarity);
+    const cond = c.condtype === 'PSA' ? c.psa : 'Raw';
+    const ps   = printStatus(c.printend);
+    const diff = (c.target && c.price) ? c.price - c.target : null;
+    const atTgt = diff !== null && diff <= 0;
+    const lsDiff = (c.lastsold && c.price) ? c.price - c.lastsold : null;
+
+    let priceMovement = '';
+    if (lsDiff !== null && lsDiff !== 0) {
+      const arrow = lsDiff > 0 ? '↑' : '↓';
+      const cls   = lsDiff > 0 ? 'red' : 'green';
+      priceMovement = `<span class="field-val ${cls}" style="font-size:12px">${arrow} HK$${Math.abs(Math.round(lsDiff)).toLocaleString()} vs last sold</span>`;
+    }
+
+    return `
+    <article class="card" data-id="${c.id}">
+      <div class="card-accent-bar" style="background:${ac}"></div>
+      <div class="card-header">
+        <div>
+          <div class="card-name">${escHtml(c.name)}</div>
+          <div class="card-set">${escHtml(c.set)}${c.num ? ' · <span class="card-num">' + escHtml(c.num) + '</span>' : ''}</div>
+        </div>
+        <span class="rarity-badge r-${rk}" title="${c.rarity}">${rs}</span>
+      </div>
+
+      <hr class="divider">
+
+      <div class="card-fields">
+        <div>
+          <div class="field-label">Market price</div>
+          <div class="field-val price-main">${hkd(c.price)}</div>
+          ${priceMovement}
+        </div>
+        <div>
+          <div class="field-label">Your target</div>
+          <div class="field-val ${atTgt ? 'green' : ''}">${hkd(c.target)}</div>
+          ${diff !== null ? `<div class="target-diff ${atTgt ? 'below' : 'above'}">${atTgt ? '✓ below target by HK$' + Math.abs(Math.round(diff)).toLocaleString() : 'HK$' + Math.round(diff).toLocaleString() + ' above target'}</div>` : ''}
+        </div>
+        <div>
+          <div class="field-label">Last sold</div>
+          <div class="field-val">${hkd(c.lastsold)}</div>
+          <div class="field-val muted">${fmtDate(c.solddate)}</div>
+        </div>
+        <div>
+          <div class="field-label">Condition</div>
+          <div class="field-val ${c.condtype === 'PSA' ? 'blue' : ''}">${escHtml(cond)}</div>
+        </div>
+        ${ps ? `<div style="grid-column:1/-1">
+          <div class="field-label">Print end</div>
+          <div class="field-val ${ps.cls}">${ps.label}</div>
+          ${ps.urgent ? '<div class="print-alert"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Buy before print ends</div>' : ''}
+        </div>` : ''}
+        ${c.notes ? `<div style="grid-column:1/-1">
+          <div class="field-label">Notes</div>
+          <div class="field-val muted">${escHtml(c.notes)}</div>
+        </div>` : ''}
+      </div>
+
+      <div class="card-actions">
+        ${c.snkr ? `<a class="btn snkrdunk-btn btn-sm" href="${escAttr(c.snkr)}" target="_blank" rel="noopener" title="Open on SNKRDUNK"><i class="ti ti-trending-up" aria-hidden="true"></i> SNKRDUNK</a>` : ''}
+        <button class="btn btn-sm" onclick="openUpdatePrice('${c.id}')" title="Quick price update"><i class="ti ti-refresh" aria-hidden="true"></i> Update</button>
+        <button class="btn btn-sm" onclick="editCard('${c.id}')" title="Edit card"><i class="ti ti-edit" aria-hidden="true"></i></button>
+        <button class="btn btn-sm btn-danger" onclick="deleteCard('${c.id}')" title="Remove card"><i class="ti ti-trash" aria-hidden="true"></i></button>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+// ── Modal ─────────────────────────────────────────────────
+function openModal(prefill) {
+  editId = prefill ? prefill.id : null;
+  document.getElementById('modalTitle').textContent = editId ? 'Edit card' : 'Add card';
+
+  const c = prefill || {};
+  document.getElementById('f-name').value     = c.name     || '';
+  document.getElementById('f-set').value      = c.set      || '';
+  document.getElementById('f-num').value      = c.num      || '';
+  document.getElementById('f-rarity').value   = c.rarity   || 'Illustration Rare';
+  document.getElementById('f-condtype').value = c.condtype || 'Raw';
+  document.getElementById('f-psa').value      = c.psa      || 'PSA 10';
+  document.getElementById('f-price').value    = c.price    || '';
+  document.getElementById('f-target').value   = c.target   || '';
+  document.getElementById('f-lastsold').value = c.lastsold || '';
+  document.getElementById('f-solddate').value = c.solddate || '';
+  document.getElementById('f-printend').value = c.printend || '';
+  document.getElementById('f-snkr').value     = c.snkr     || '';
+  document.getElementById('f-notes').value    = c.notes    || '';
+
+  togglePSA();
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(() => document.getElementById('f-name').focus(), 50);
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+  editId = null;
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('overlay')) closeModal();
+}
+
+function togglePSA() {
+  document.getElementById('psaRow').style.display =
+    document.getElementById('f-condtype').value === 'PSA' ? 'grid' : 'none';
+}
+
+function saveCard() {
+  const name = document.getElementById('f-name').value.trim();
+  const set  = document.getElementById('f-set').value.trim();
+  if (!name) { alert('Card name is required.'); return; }
+  if (!set)  { alert('Set name is required.'); return; }
+
+  const card = {
+    id:       editId || uid(),
+    name,
+    set,
+    num:      document.getElementById('f-num').value.trim(),
+    rarity:   document.getElementById('f-rarity').value,
+    condtype: document.getElementById('f-condtype').value,
+    psa:      document.getElementById('f-psa').value,
+    price:    parseFloat(document.getElementById('f-price').value)    || 0,
+    target:   parseFloat(document.getElementById('f-target').value)   || 0,
+    lastsold: parseFloat(document.getElementById('f-lastsold').value) || 0,
+    solddate: document.getElementById('f-solddate').value,
+    printend: document.getElementById('f-printend').value,
+    snkr:     document.getElementById('f-snkr').value.trim(),
+    notes:    document.getElementById('f-notes').value.trim(),
+    added:    editId ? (cards.find(c=>c.id===editId)||{}).added || Date.now() : Date.now()
+  };
+
+  if (editId) {
+    cards = cards.map(c => c.id === editId ? card : c);
+    toast('Card updated ✓');
+  } else {
+    cards.unshift(card);
+    toast('Card added to watchlist ✓');
+  }
+
+  saveData();
+  closeModal();
+  render();
+}
+
+function editCard(id) {
+  const c = cards.find(x => x.id === id);
+  if (c) openModal(c);
+}
+
+function deleteCard(id) {
+  const c = cards.find(x => x.id === id);
+  if (!c) return;
+  if (!confirm(`Remove "${c.name}" from your watchlist?`)) return;
+  cards = cards.filter(x => x.id !== id);
+  saveData();
+  render();
+  toast('Card removed');
+}
+
+function openUpdatePrice(id) {
+  const c = cards.find(x => x.id === id);
+  if (!c) return;
+  const val = prompt(`New market price for ${c.name} (HKD):`, c.price);
+  if (val === null) return;
+  const n = parseFloat(val);
+  if (isNaN(n) || n < 0) { alert('Enter a valid price.'); return; }
+  c.lastsold = c.price;
+  c.solddate = new Date().toISOString().slice(0,10);
+  c.price    = n;
+  saveData();
+  render();
+  toast(`Price updated → HK$${Math.round(n).toLocaleString()}`);
+}
+
+// ── Sanitise ──────────────────────────────────────────────
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) { return escHtml(s); }
+
+// ── Keyboard shortcuts ────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openModal(); }
+});
+
+// ── Init ──────────────────────────────────────────────────
+loadData();
+loadGhUrl();
+render();
+</script>
+</body>
+</html>
